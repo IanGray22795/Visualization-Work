@@ -13,7 +13,7 @@ output:
     fig_align: 'center'
 ---
 
-```{r, echo=FALSE}
+```{r, echo=FALSE} 
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
