@@ -1,0 +1,233 @@
+---
+title: "SalesDataAnalysis"
+author: "Ian Gray"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    theme: journal
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+
+
+
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(DT)
+library(pander)
+library(readr)
+library(mosaic)
+library(car)
+library(ggplot2)
+library(wesanderson)
+library(lubridate)
+
+
+SalesData <- read_csv("SalesData2016-2018.csv")
+
+SalesData <- SalesData %>%
+  mutate(Date2 = as.POSIXct( strptime(Date,format="%m/%d/%Y")), 
+         Month = months(Date2),
+         Weekday=weekdays(Date2),
+         Quarter=quarters(Date2),
+         Year=year(Date2),
+         amount2=parse_number(Amount))
+         
+
+```
+
+William, based on the follow-up question, asking the quantity of each product sold over a year and in each quarter, with regards to your product sales over the years I put together a couple of graphs to better explain the Data you provided me.
+
+```{r, include=FALSE}
+
+SalesData2<-SalesData%>%
+  filter(!is.na(Date))
+
+SalesData3<-SalesData2%>%
+  select(c(Date2,Month,Quarter,Year,Name,Item,Qty,"Sales Price",amount2))
+
+SalesData4<-SalesData3%>%
+  group_by(Year,Quarter,Item)%>%
+  summarise(Quantity=sum(Qty))
+
+SalesData5<-SalesData3%>%
+  group_by(Year,Item)%>%
+  summarise(Quantity=sum(Qty))
+
+SalesDataQ<-SalesData4%>%
+  group_by(Quarter,Item)%>%
+  summarise(Quantity=sum(Quantity))
+
+
+
+SalesData6<-SalesData5%>%
+  filter(Quantity>=50)
+
+SalesData7<-SalesData6%>%
+  group_by(Item)%>%
+  summarise(Quantity=sum(Quantity))
+
+SalesData8<-SalesData7%>%
+filter(Quantity>=100)
+
+SalesData2016<-SalesData4%>%
+  filter(Year==2016)
+
+SalesData2017<-SalesData4%>%
+  filter(Year==2017)
+
+SalesData2018<-SalesData4%>%
+  filter(Year==2018)
+
+SalesData2016fl <- SalesData2016 %>%
+  filter(Quantity >=10)
+
+SalesData2017fl<-SalesData2017%>%
+  filter(Quantity>=10)
+
+SalesData2018fl<-SalesData2018%>%
+  filter(Quantity>=10)
+```
+
+## Your Outcomes {.tabset .tabset-fade .tabset-pills}
+
+### Overall Product Sales 2016-2018
+
+For this first graph I took all of your sales over the past 3 years and combined the numbers to get overall totals for the top 14 products you sold in the 3 years. As you can see each column on the graph represents an overall total with a combination from the sales of all three years. 
+```{r}
+ggplot(SalesData6,aes(x=factor(Item),y=Quantity,fill=factor(Year)))+
+  geom_col()+
+  scale_fill_manual(name="Year",
+                    values = wes_palette("BottleRocket2"))+
+  labs(x="Products Sold",
+       y="Total of Each Product Sold",
+       title="Year Totals of top 14 Products Sold from 2016 to 2018 combined")+
+  theme(axis.text.x = element_text(angle = 45,hjust = 1))
+
+```
+ 
+Additioinally, I provided two tables one with the overall totals and the other broken down into by year. the most interesting statistic I found fom this graph was that only two products were sold in all 3 years and they also happen to be the first and second most sold product.
+```{r} 
+pander(SalesData7)
+```
+
+
+```{r}
+pander(SalesData6)
+
+
+```
+
+#### Summary of Graph
+
+Based ont he data you provided the highest selling procudt in a single year was The EDID-EW-H in 2018 with 255 units sold. While the EDID-EW-H  was the most sold product in 2018 it was not sold at all in 2017 and 2016. 
+
+The overall top two Products sold over the Three years were the DA-HDTV-SDI and DA-2HD with 420 and 316 units sold respectively. Overall there could be a trend with products that sell consistently from year to year and their popularity in sales.
+
+### 2016 Product Sales Info
+
+For this graph and the other two prceding grpahs all the products represented on the graph had greater than 10 sales in a single quarter. While I was not able to account for the return of products for this graph and the next two graphs with regards to 2017 sales ifo and 2018 sales info.
+
+```{r}
+ggplot(SalesData2016fl,aes(x=factor(Item),y=Quantity,fill=factor(Quarter)))+
+  geom_col()+
+  scale_fill_manual(name="Quarter",
+                    labels=c("Q1 Jan-Mar","Q2 Apr-Jun","Q3 Jul-Sep","Q4 Oct-Dec"),
+                    values = wes_palette("IsleofDogs1"))+
+  labs(x="Products Sold",
+       y="Total of Each Product Sold Through the Year",
+       title="Total of Each Products Sales in 2016 Separated by Quarter")+
+theme(axis.text.x = element_text(angle = 90,hjust = 1))
+```
+
+This is the data split between each Item and Quarter that was used for this graph.
+```{r}
+pander(SalesData2016fl)
+```
+
+#### Summary of Graph
+
+Out of the data you had fom 2016 there were four products that sold 100 units and greater. The products were DA-HDTV-SDI, HDMI-ADPT, HDMI-E, and OPS-SDI-HDTV each having 124,128,123,100 units sold respectively. The interesting situation here was that the Product HDMI-ADPT had a large single order at the end of the year which was greater than all the other product sales totals throughout the year.
+
+### 2017 Product Sales Info
+
+```{r}
+ggplot(SalesData2017fl,aes(x=factor(Item),y=Quantity,fill=factor(Quarter)))+
+  geom_col()+
+  scale_fill_manual(name="Quarter",
+                    labels=c("Q1 Jan-Mar","Q2 Apr-Jun","Q3 Jul-Sep","Q4 Oct-Dec"),
+                    values = wes_palette("IsleofDogs1"))+
+  labs(x="Products Sold",
+       y="Total of Each Product Sold Through the Year",
+       title="Totals of Each Products Sales in 2017 Separated by Quarter")+
+theme(axis.text.x = element_text(angle = 90,hjust = 1))
+
+```
+
+This is the data split between each Item and Quarter that was used for this graph.
+```{r}
+pander(SalesData2017fl)
+```
+
+#### Summary of Graph
+
+2017 compared to 2016 was slower n the amount units total units sold throughout the year for each product. Only one Product sold more than 100 units and it was the DA-HDTV-SDI. Additionally the DA-HDTV-SDI product sold in all four quarters of the year.
+
+### 2018 Product Sales Info
+
+```{r}
+ggplot(SalesData2018fl,aes(x=factor(Item),y=Quantity,fill=factor(Quarter)))+
+  geom_col()+
+  scale_fill_manual(name="Quarter",
+                    labels=c("Q1 Jan-Mar","Q2 Apr-Jun","Q3 Jul-Sep","Q4 Oct-Dec"),
+                    values = wes_palette("IsleofDogs1"))+
+  labs(x="Products Sold",
+       y="Total of Each Product Sold Through the Year",
+       title="Totals of Each Products Sales in 2018 Separated by Quarter")+
+theme(axis.text.x = element_text(angle = 90,hjust = 1))
+
+```
+This is the data split between each Item and Quarter that was used for this graph
+```{r}
+pander(SalesData2018fl)
+```
+
+#### Summary of graph
+
+Based on the graph ther a couple of products that sold over 100 units in 2018 as copared to 2017. For instance, the three products that sold over 100 units were the DA-2HD = 136 units, DA-HDTV-SDI = 163 units, and the EDID-EW-H = 255 units. This was interesting to see the jump in sales towards the end of the year but could also be linked to customers wanting to fully spend ther budgets by the end of the year. Additionally, the product EDID-EW-H which was the most sold product out of all the years also had high sales, over 100 units, in both the first and fourth quarter of the year.
+
+
+## Conclusion
+
+Based on the graphs I hope that you will b able to understand your sales numbers more thourhgly I would suggest looking into what actions you took to get those sales specifically the EDID-EW-H productit seeems as thought there is much potential there for possible future sales. Additionally, the products DA-2HD and DA-HDTV-SDI are great candidates for some better looking into for their sales as the have the highest sales overall and are consistently sold each year.
+<!--  top 14 items over the three years.  
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
