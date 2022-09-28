@@ -1,0 +1,113 @@
+---
+title: "The Olympics"
+output: 
+  html_document:
+    theme: cosmo
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+**Week 2 Analysis**
+
+```{r, include=FALSE}
+library(mosaic)
+library(pander)
+library(tidyverse)
+library(DT)
+library(ggplot2)
+Olympics <- read.csv("Olympics.csv", header=TRUE)
+
+options(dplyr.summarise.inform = FALSE)
+```
+
+<br />
+
+```{r, warning=FALSE}
+# Code to get you started. 
+# Only the first 100 observations are shown here because the dataset is really too big to show all of it in a markdown file.
+datatable(head(Olympics,100), options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
+```
+
+## Background {.tabset .tabset-fade .tabset-pills}
+
+```{r}
+Ol2<-Olympics%>%
+  filter(Season=="Summer")%>%
+  select(Games,Year,Season,Team,Sport,NOC,Name,ID)
+Part2<-Ol2%>%
+   filter(Year==1896|Year==1912|Year==1932|Year==1952|Year==1972|Year==1992|Year==2012|Year==2016)%>%
+   group_by(Year,NOC)%>%
+   summarise(n())
+Participants<-Ol2%>%
+   group_by(Year,NOC)%>%
+   summarise(n())
+Part3<-Ol2%>%
+  filter(Year==1912|Year==1920|Year==1936|Year==1948)%>%
+  group_by(Year,NOC)%>%
+  summarise(n())
+PartTable<-Part2%>%
+  group_by(Year)%>%
+  summarise("Number of Participating Country's"=n())
+PartTable2<-Part3%>%
+  group_by(Year)%>%
+  summarise("Number of Participating Country's"=n())
+```
+
+
+What has been the general increase of participating country's in the olympics over time? In addition to did the two major wars, of the 19th century, have an effect on country participation?
+
+### Growth of Olympic Participants Graph
+
+```{r}
+ggplot(Part2,aes(x=factor(Year)))+geom_bar(fill="dodgerblue3",color="black",)+labs(x="Year Olympics was Held",y="Number of Participating Contry's",title="Reach of Olympics to New Country's")
+```
+
+### Major Event Effects Graph
+
+```{r}
+ggplot(Part3,aes(x=factor(Year), fill=ifelse(Year < 1930, "Before", "After")))+geom_bar(color="black")+labs(x="Year of The Two Closest Olympics to Individual War",y="Number of Participating Country's",title="Effect of WW1 and WW2 on Country Participation in Olympics")+ scale_fill_manual(values=c("#d4ef26", "#c242d1", "#d4ef26"),name="War Period",labels=c("WW2", "WW1"))
+```
+
+
+### Graph Data Explaination
+
+**Growth of Olympic Participants Graph Data**
+```{r}
+pander(PartTable)
+```
+
+**Major Event Effects Graph Data**
+```{r}
+pander(PartTable2)
+
+```
+
+
+
+##
+To answer my first question I created a bar graph that shows the increase of country's participating each year at an interval of 20 years per measurement. It can be plainly seen that over time participation has grown at an almost eponetial rate until the last couple of years due to nerarly every country in the world being a participant in the 2016 Olympics. The largest increase in between Olympiccs as described by the graph is between 1952 and 1972 this may be due to the distnance in date from World War 2 each of those years having and the capability of newer country's being able to particpate in 1972.
+
+Additionally I compared the differnece in participation of country's between the olympics that fall directly beofre and after both World War 1 and World War 2. It is interesting to see no difference in participating country's between 1912 and 1920 for WW1. While there was a moderate differnece between 1936 and 1948 for WW2. 
+
+Overall it was interesting to learn how many new country's for the longest time would begin to participate in the Olympics. It truely shows that there is great companionship to be had in sport competition as everyone semms to want to participate.<!-- or comment it out -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[^1]: Note that Stephanie is a fictional character who is based on real experiences of many faculty and staff here at BYU-Idaho.

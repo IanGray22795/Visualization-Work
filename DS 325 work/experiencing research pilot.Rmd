@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+author: "Ian Gray"
+date: "1/29/2020"
+output: 
+ html_document:
+   keep_md: true
+   toc: true
+   toc_float: true
+   code_folding: hide
+   fig_height: 6
+   fig_width: 12
+   fig_align: 'center'
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(pander)
+AweF19Working_1_ <- read_csv("AweF19Working (1).csv")
+
+myaov<-aov(AWEsVast_AVG~as.factor(VIDCODE),data=AweF19Working_1_)
+summary(myaov)
+```
+
+```{r}
+pander(myaov)
+```
+
+
